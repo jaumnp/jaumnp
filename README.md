@@ -55,11 +55,13 @@
 ## 🎮 Joguinho no para se distrair haha
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph.svg">
-    <img alt="Pac-Man contribution graph" src="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph.svg">
-  </picture>
+  <a href="https://jaumnp.github.io/jaumnp/" target="_blank">
+    <img src="https://img.shields.io/badge/Jogar%20Commit%20Raid-0f172a?style=for-the-badge&logo=github&logoColor=white" />
+  </a>
+</p>
+
+<p align="center">
+  Inimigos gerados a partir das minhas contribuições no GitHub 🚀
 </p>
 
 ---
