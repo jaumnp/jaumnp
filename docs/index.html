@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Commit Raid • jaumnp</title>
+  <title>Commit Raid v2 • jaumnp</title>
   <style>
     :root{
-      --bg:#090b10;
-      --panel:rgba(10,12,18,.75);
-      --line:rgba(140,170,255,.15);
-      --text:#e8ecff;
-      --muted:#9aa7cf;
-      --danger:#ff5a7a;
+      --bg:#05070c;
+      --panel:rgba(8,12,18,.72);
+      --panel2:rgba(10,14,22,.86);
+      --line:rgba(121,168,255,.16);
+      --text:#edf2ff;
+      --muted:#9fb0d8;
+      --accent:#79a8ff;
       --ok:#63ffa6;
       --warn:#ffd166;
-      --accent:#79a8ff;
+      --danger:#ff5a7a;
+      --pink:#ff80bf;
+      --green:#6dffb0;
+      --shadow:0 12px 36px rgba(0,0,0,.35);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      background: radial-gradient(circle at 50% 20%, #121724 0%, #090b10 60%, #05060a 100%);
+      background: radial-gradient(circle at 50% 18%, #111728 0%, #080b12 55%, #04050a 100%);
       color:var(--text);
       font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Arial, sans-serif;
       overflow:hidden;
@@ -30,7 +35,6 @@
       display:block;
       width:100vw;
       height:100vh;
-      image-rendering:auto;
       cursor: crosshair;
     }
 
@@ -40,146 +44,532 @@
       pointer-events:none;
     }
 
-    .topbar{
+    .chrome{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 55%, rgba(121,168,255,.06), transparent 40%),
+        radial-gradient(circle at 50% 55%, transparent 58%, rgba(0,0,0,.42) 100%);
+      mix-blend-mode:screen;
+      opacity:.65;
+    }
+
+    .scanlines{
+      position:absolute;
+      inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.018) 0px,
+        rgba(255,255,255,.018) 1px,
+        rgba(0,0,0,0) 2px,
+        rgba(0,0,0,0) 4px
+      );
+      opacity:.45;
+      mix-blend-mode:soft-light;
+    }
+
+    .top{
       position:absolute;
       top:14px; left:14px; right:14px;
-      display:flex; justify-content:space-between; gap:12px;
-      font-size:14px;
+      display:grid;
+      grid-template-columns: 1.15fr .9fr;
+      gap:12px;
+      align-items:start;
     }
 
     .panel{
-      background:var(--panel);
+      background: var(--panel);
       border:1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(6px);
-      border-radius:12px;
+      border-radius:14px;
       padding:10px 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,.25);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .panel.strong{
+      background: var(--panel2);
+      border-color: rgba(121,168,255,.14);
+      box-shadow: 0 0 0 1px rgba(121,168,255,.08) inset, var(--shadow);
+    }
+
+    .title-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
     }
 
     .title{
-      font-weight:700; letter-spacing:.4px;
-      display:flex; align-items:center; gap:8px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:800;
+      letter-spacing:.4px;
+      font-size:14px;
     }
-    .dot{
-      width:8px; height:8px; border-radius:50%;
+    .pulse-dot{
+      width:8px;height:8px;border-radius:50%;
       background:var(--ok);
-      box-shadow:0 0 12px var(--ok);
-      display:inline-block;
+      box-shadow:0 0 14px var(--ok);
+      animation:pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); opacity:.85; }
+      50%{ transform:scale(1.25); opacity:1; }
     }
 
-    .stats{
-      display:flex; gap:10px; flex-wrap:wrap;
+    .chip{
+      font-size:11px;
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:999px;
+      padding:4px 8px;
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:8px;
+      margin-top:6px;
+    }
+
+    .stat{
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:10px;
+      padding:8px;
+      background: rgba(255,255,255,.015);
+    }
+    .stat .k{
+      display:block;
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:3px;
+    }
+    .stat .v{
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+
+    .meters{
+      display:grid;
+      gap:8px;
+      margin-top:8px;
+    }
+    .meter{
+      display:grid;
+      grid-template-columns: 80px 1fr 56px;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
       color:var(--muted);
     }
-    .stats b{color:var(--text)}
+    .meter b{ color:var(--text); font-size:12px; }
+    .bar{
+      position:relative;
+      height:8px;
+      border-radius:999px;
+      overflow:hidden;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.05);
+    }
+    .bar > i{
+      position:absolute;
+      inset:0 auto 0 0;
+      width:0%;
+      display:block;
+      border-radius:999px;
+      transition:width .15s linear;
+      box-shadow:0 0 14px currentColor;
+    }
+
+    .right-col{
+      display:grid;
+      gap:12px;
+    }
+
+    .radar-wrap{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    .radar-box{
+      width:160px;height:160px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.015);
+      display:grid;
+      place-items:center;
+    }
+
+    .radar-labels{
+      font-size:12px;
+      color:var(--muted);
+      display:grid;
+      gap:6px;
+      min-width:150px;
+    }
+    .radar-labels b{ color:var(--text); }
+
+    .feed{
+      max-height:150px;
+      overflow:hidden;
+      display:grid;
+      gap:6px;
+      margin-top:8px;
+    }
+    .feed-item{
+      font-size:11px;
+      color:var(--muted);
+      border-left:2px solid rgba(121,168,255,.35);
+      padding-left:8px;
+      line-height:1.25;
+      opacity:.95;
+    }
+    .feed-item b{ color:var(--text); }
+
+    .weapon-bar{
+      position:absolute;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      display:flex;
+      gap:8px;
+      pointer-events:none;
+      flex-wrap:wrap;
+      justify-content:center;
+      width:min(860px, calc(100vw - 28px));
+    }
+
+    .weapon-slot{
+      min-width:160px;
+      max-width:calc(50% - 4px);
+      padding:10px 12px;
+      border-radius:12px;
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.06);
+      color:var(--muted);
+      box-shadow: var(--shadow);
+    }
+    .weapon-slot.active{
+      color:var(--text);
+      border-color: rgba(121,168,255,.35);
+      box-shadow: 0 0 0 1px rgba(121,168,255,.14) inset, 0 0 22px rgba(121,168,255,.12), var(--shadow);
+      background: rgba(10,14,22,.88);
+    }
+    .weapon-slot .topline{
+      display:flex; justify-content:space-between; gap:8px; align-items:center;
+      font-size:11px;
+      margin-bottom:4px;
+    }
+    .weapon-slot .n{
+      color:var(--accent);
+      font-weight:900;
+      font-size:13px;
+    }
+    .weapon-slot .name{
+      font-weight:800;
+      font-size:12px;
+      color:inherit;
+    }
+    .weapon-slot .sub{
+      font-size:11px;
+      opacity:.9;
+    }
 
     .bottom-left{
       position:absolute;
       left:14px; bottom:14px;
-      max-width:min(520px, 90vw);
+      max-width:min(560px, calc(100vw - 28px));
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .bottom-left b{ color:var(--text); }
+
+    .center-card{
+      position:absolute;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      min-width:min(520px, calc(100vw - 28px));
+      max-width:min(720px, calc(100vw - 28px));
+      text-align:center;
+      background: rgba(6,8,14,.82);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      backdrop-filter: blur(10px);
+      padding:16px 18px;
+      pointer-events:none;
+    }
+    .center-card h2{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.4px;
+    }
+    .center-card p{
+      margin:8px 0 0 0;
       font-size:13px;
       color:var(--muted);
       line-height:1.35;
     }
-
-    .weapon-bar{
-      position:absolute;
-      left:50%; transform:translateX(-50%);
-      bottom:16px;
-      display:flex; gap:8px;
-      pointer-events:none;
+    .center-card .subgrid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+      margin-top:12px;
     }
-
-    .weapon-slot{
-      min-width:122px;
-      padding:10px 12px;
-      border-radius:12px;
-      background:var(--panel);
+    .center-card .pill{
+      border-radius:10px;
       border:1px solid rgba(255,255,255,.06);
-      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      padding:8px;
       font-size:12px;
-      text-align:left;
+      color:var(--muted);
     }
-    .weapon-slot.active{
-      border-color: rgba(121,168,255,.5);
-      box-shadow:0 0 0 1px rgba(121,168,255,.18) inset, 0 0 20px rgba(121,168,255,.12);
+    .center-card .pill b{
+      display:block;
+      color:var(--text);
+      font-size:15px;
+      margin-top:2px;
+    }
+
+    .banner{
+      position:absolute;
+      left:50%;
+      top:92px;
+      transform:translateX(-50%);
+      max-width:min(680px, calc(100vw - 28px));
+      width:max-content;
+      padding:10px 14px;
+      border-radius:12px;
+      background: rgba(10,12,18,.88);
+      border:1px solid rgba(255,255,255,.07);
+      box-shadow: var(--shadow);
+      font-weight:800;
+      letter-spacing:.5px;
+      font-size:12px;
+      opacity:0;
+      transition:opacity .18s ease, transform .18s ease;
       color:var(--text);
     }
-    .weapon-slot .n{font-weight:800; color:var(--accent); margin-right:6px}
-    .weapon-slot .name{font-weight:700; color:inherit; display:block}
-    .weapon-slot .sub{font-size:11px; opacity:.9}
-
-    .center-msg{
-      position:absolute;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      text-align:center;
-      background:rgba(6,8,12,.65);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:14px;
-      padding:14px 16px;
-      min-width:280px;
+    .banner.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
     }
-    .center-msg h2{margin:0 0 6px 0; font-size:18px}
-    .center-msg p{margin:0; color:var(--muted); font-size:13px}
+    .banner.alert{
+      border-color: rgba(255,90,122,.35);
+      box-shadow: 0 0 0 1px rgba(255,90,122,.08) inset, 0 0 22px rgba(255,90,122,.12), var(--shadow);
+      color:#ffd7df;
+    }
+    .banner.info{
+      border-color: rgba(121,168,255,.35);
+      color:#d9e7ff;
+    }
+    .banner.ok{
+      border-color: rgba(99,255,166,.3);
+      color:#d4ffea;
+    }
 
-    .scanlines{
-      position:fixed; inset:0; pointer-events:none;
-      background:
-        repeating-linear-gradient(to bottom,
-          rgba(255,255,255,.02) 0px,
-          rgba(255,255,255,.02) 1px,
-          rgba(0,0,0,0) 2px,
-          rgba(0,0,0,0) 4px);
-      mix-blend-mode:soft-light;
-      opacity:.45;
+    .tiny{
+      font-size:11px;
+      color:var(--muted);
+      opacity:.92;
     }
 
     .corner{
-      position:absolute; width:26px; height:26px; border-color:rgba(121,168,255,.35);
+      position:absolute; width:28px; height:28px;
+      border-color:rgba(121,168,255,.26);
+      opacity:.95;
     }
     .corner.tl{top:10px; left:10px; border-top:2px solid; border-left:2px solid; border-radius:10px 0 0 0}
     .corner.tr{top:10px; right:10px; border-top:2px solid; border-right:2px solid; border-radius:0 10px 0 0}
     .corner.bl{bottom:10px; left:10px; border-bottom:2px solid; border-left:2px solid; border-radius:0 0 0 10px}
     .corner.br{bottom:10px; right:10px; border-bottom:2px solid; border-right:2px solid; border-radius:0 0 10px 0}
+
+    .boot-overlay{
+      position:fixed; inset:0;
+      display:grid; place-items:center;
+      background: radial-gradient(circle at 50% 30%, rgba(16,21,35,.92), rgba(4,6,10,.97));
+      z-index:10;
+      transition:opacity .35s ease;
+      pointer-events:none;
+    }
+    .boot-overlay.hidden{ opacity:0; }
+    .boot-card{
+      width:min(640px, calc(100vw - 24px));
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(8,12,18,.78);
+      padding:16px;
+      box-shadow:0 24px 60px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+    }
+    .boot-title{
+      font-weight:900;
+      letter-spacing:.8px;
+      font-size:18px;
+      margin-bottom:6px;
+    }
+    .boot-sub{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+    .boot-progress{
+      height:10px; border-radius:999px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.04);
+    }
+    .boot-progress > i{
+      display:block; height:100%; width:0%;
+      background: linear-gradient(90deg, rgba(121,168,255,.9), rgba(99,255,166,.9));
+      box-shadow: 0 0 18px rgba(121,168,255,.35);
+      transition: width .2s ease;
+    }
+    .boot-lines{
+      margin-top:12px;
+      display:grid;
+      gap:5px;
+      font-size:11px;
+      color:var(--muted);
+      max-height:120px;
+      overflow:hidden;
+    }
+    .boot-lines b{ color:var(--text); }
+
+    @media (max-width: 980px){
+      .top{ grid-template-columns: 1fr; }
+      .radar-wrap{ grid-template-columns: auto 1fr; }
+      .weapon-slot{ min-width:140px; }
+      .weapon-bar{ bottom:92px; }
+      .bottom-left{ max-width:calc(100vw - 28px); }
+    }
+
+    @media (max-width: 680px){
+      .stats-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .center-card .subgrid{ grid-template-columns:1fr; }
+      .radar-box{ width:120px; height:120px; }
+      .weapon-slot{ min-width:100%; max-width:100%; }
+    }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
 
   <div class="hud">
-    <div class="topbar">
-      <div class="panel">
-        <div class="title"><span class="dot"></span> COMMIT RAID // jaumnp</div>
-        <div class="stats" id="leftStats"></div>
+    <div class="top">
+      <div class="panel strong">
+        <div class="title-row">
+          <div class="title"><span class="pulse-dot"></span> COMMIT RAID // jaumnp</div>
+          <div class="chip" id="buildChip">dados: carregando…</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat"><span class="k">HP</span><span class="v" id="uiHp">100</span></div>
+          <div class="stat"><span class="k">Score</span><span class="v" id="uiScore">0</span></div>
+          <div class="stat"><span class="k">Combo</span><span class="v" id="uiCombo">x0</span></div>
+          <div class="stat"><span class="k">Wave</span><span class="v" id="uiWave">1</span></div>
+          <div class="stat"><span class="k">Restantes</span><span class="v" id="uiRemain">0</span></div>
+          <div class="stat"><span class="k">FPS</span><span class="v" id="uiFps">0</span></div>
+        </div>
+
+        <div class="meters">
+          <div class="meter">
+            <span>Integridade</span>
+            <div class="bar"><i id="hpBar" style="color:#63ffa6; width:100%"></i></div>
+            <b id="hpPct">100%</b>
+          </div>
+          <div class="meter">
+            <span>Combo Heat</span>
+            <div class="bar"><i id="comboBar" style="color:#79a8ff; width:0%"></i></div>
+            <b id="comboVal">0</b>
+          </div>
+          <div class="meter">
+            <span>Ameaça</span>
+            <div class="bar"><i id="threatBar" style="color:#ffd166; width:0%"></i></div>
+            <b id="threatVal">BAIXA</b>
+          </div>
+        </div>
+
+        <div class="feed" id="killFeed"></div>
       </div>
-      <div class="panel">
-        <div class="stats" id="rightStats"></div>
+
+      <div class="right-col">
+        <div class="panel">
+          <div class="title-row" style="margin-bottom:8px;">
+            <div class="title">TACTICAL RADAR</div>
+            <div class="chip">commits = hostis</div>
+          </div>
+          <div class="radar-wrap">
+            <div class="radar-box">
+              <canvas id="radar" width="160" height="160" style="width:160px;height:160px;display:block;"></canvas>
+            </div>
+            <div class="radar-labels">
+              <div><b>Total commits (janela)</b>: <span id="uiTotal">0</span></div>
+              <div><b>Último alvo</b>: <span id="uiLastKill">—</span></div>
+              <div><b>Boss do raid</b>: <span id="uiBoss">—</span></div>
+              <div class="tiny">Dias com mais commits viram elites/bosses. Os inimigos avançam até o núcleo (você).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="title-row">
+            <div class="title">LOADOUT</div>
+            <div class="chip" id="weaponChip">1 • Frontend Burst</div>
+          </div>
+          <div class="tiny">Mouse mira • Clique atira • <b>1–4</b> troca arma • <b>R</b> reinicia • <b>Espaço</b> atira</div>
+        </div>
       </div>
     </div>
+
+    <div class="banner" id="banner"></div>
 
     <div class="weapon-bar" id="weaponBar"></div>
 
     <div class="bottom-left panel">
-      <div><b>Controles:</b> Mouse mira • Clique atira • <b>1</b> HTML/CSS/JS • <b>2</b> Node • <b>3</b> Java • <b>4</b> React • <b>R</b> reiniciar</div>
-      <div style="margin-top:6px;">Os inimigos representam dias com contribuições. Quanto mais commits em um dia, mais HP e mais pontuação.</div>
+      <div><b>Commit Raid v2:</b> mini game autoral onde cada inimigo representa um <b>dia com commits</b>. Mais commits = mais HP, mais pontuação e chance de virar elite/boss.</div>
+      <div style="margin-top:6px;">Slots: <b>1</b> HTML/CSS/JS • <b>2</b> Node.js • <b>3</b> Java DMR • <b>4</b> React Pulse</div>
     </div>
 
-    <div class="center-msg" id="centerMsg">
-      <h2>Prepare-se para o raid</h2>
-      <p>Carregando dados de commits...</p>
+    <div class="center-card" id="centerCard">
+      <h2>Inicializando sistema tático…</h2>
+      <p>Carregando dados de contribuições e preparando hostis para o raid.</p>
+      <div class="subgrid">
+        <div class="pill">Perfil<b>jaumnp</b></div>
+        <div class="pill">Modo<b>Commit Raid</b></div>
+        <div class="pill">Visual<b>v2 HUD</b></div>
+      </div>
     </div>
 
     <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+    <div class="chrome"></div>
+    <div class="scanlines"></div>
   </div>
 
-  <div class="scanlines"></div>
+  <div class="boot-overlay" id="bootOverlay">
+    <div class="boot-card">
+      <div class="boot-title">COMMIT RAID // BOOT SEQUENCE</div>
+      <div class="boot-sub">Construindo arena a partir do seu histórico de contribuições.</div>
+      <div class="boot-progress"><i id="bootBar"></i></div>
+      <div class="boot-lines" id="bootLines"></div>
+    </div>
+  </div>
 
   <script>
+    // ===============================
+    // COMMIT RAID v2 — jaumnp
+    // ===============================
     const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
+    const radarCanvas = document.getElementById("radar");
+    const rctx = radarCanvas.getContext("2d");
 
-    let W = 0, H = 0, DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    let W = 0, H = 0;
+
     function resize() {
       W = Math.floor(window.innerWidth);
       H = Math.floor(window.innerHeight);
@@ -191,371 +581,702 @@
     resize();
 
     const weapons = [
-      { key:"1", name:"Frontend Burst", sub:"HTML/CSS/JS", damage:24, fireRate:7, hitRadius:22, spread:0.03, color:"#79a8ff" },
-      { key:"2", name:"Node Stream",    sub:"Node.js",      damage:14, fireRate:12, hitRadius:26, spread:0.05, color:"#63ffa6" },
-      { key:"3", name:"Java DMR",       sub:"Java",         damage:44, fireRate:3, hitRadius:18, spread:0.018, color:"#ffd166" },
-      { key:"4", name:"React Pulse",    sub:"React",        damage:30, fireRate:5, hitRadius:34, spread:0.025, color:"#ff80bf", splash:16 },
+      { key:"1", name:"Frontend Burst", sub:"HTML/CSS/JS", damage:24, fireRate:7,  hitRadius:22, spread:0.028, color:"#79a8ff", crit:0.08 },
+      { key:"2", name:"Node Stream",    sub:"Node.js",      damage:14, fireRate:12, hitRadius:28, spread:0.05,  color:"#63ffa6", crit:0.04 },
+      { key:"3", name:"Java DMR",       sub:"Java",         damage:46, fireRate:3,  hitRadius:17, spread:0.016, color:"#ffd166", crit:0.14 },
+      { key:"4", name:"React Pulse",    sub:"React",        damage:30, fireRate:5,  hitRadius:34, spread:0.022, color:"#ff80bf", splash:20, crit:0.07 },
     ];
 
     const state = {
       username: "jaumnp",
       totalContributions: 0,
+      generatedAt: null,
+
+      time: 0,
+      dtSmooth: 1/60,
+      fps: 60,
+
       playerHp: 100,
       score: 0,
       combo: 0,
       wave: 1,
-      time: 0,
+      threat: 0,
+
       weaponIndex: 0,
-      mouseX: window.innerWidth / 2,
-      mouseY: window.innerHeight / 2,
       fireCooldown: 0,
-      spawnCooldown: 0,
-      queueIndex: 0,
+
+      mouseX: innerWidth/2,
+      mouseY: innerHeight/2,
+
       queue: [],
+      queueIndex: 0,
       active: [],
       particles: [],
+      damageTexts: [],
       flashes: [],
-      gameOver: false,
+      shells: [],
+      feed: [],
+      banner: { text:"", type:"info", timer:0 },
+
+      recoil: 0,
+      cameraKickX: 0,
+      cameraKickY: 0,
+
+      spawnCooldown: 0.2,
       started: false,
       loading: true,
-      lastKilledLabel: "",
-      seedTick: 0
+      gameOver: false,
+
+      lastKilledLabel: "—",
+      bossLabel: "—",
+      bossSpawned: false,
+      finalGrade: null,
     };
 
-    const leftStats = document.getElementById("leftStats");
-    const rightStats = document.getElementById("rightStats");
-    const centerMsg = document.getElementById("centerMsg");
-    const weaponBar = document.getElementById("weaponBar");
+    // DOM
+    const ui = {
+      buildChip: document.getElementById("buildChip"),
+      uiHp: document.getElementById("uiHp"),
+      uiScore: document.getElementById("uiScore"),
+      uiCombo: document.getElementById("uiCombo"),
+      uiWave: document.getElementById("uiWave"),
+      uiRemain: document.getElementById("uiRemain"),
+      uiFps: document.getElementById("uiFps"),
+      hpBar: document.getElementById("hpBar"),
+      hpPct: document.getElementById("hpPct"),
+      comboBar: document.getElementById("comboBar"),
+      comboVal: document.getElementById("comboVal"),
+      threatBar: document.getElementById("threatBar"),
+      threatVal: document.getElementById("threatVal"),
+      uiTotal: document.getElementById("uiTotal"),
+      uiLastKill: document.getElementById("uiLastKill"),
+      uiBoss: document.getElementById("uiBoss"),
+      killFeed: document.getElementById("killFeed"),
+      centerCard: document.getElementById("centerCard"),
+      banner: document.getElementById("banner"),
+      weaponBar: document.getElementById("weaponBar"),
+      weaponChip: document.getElementById("weaponChip"),
+      bootOverlay: document.getElementById("bootOverlay"),
+      bootBar: document.getElementById("bootBar"),
+      bootLines: document.getElementById("bootLines"),
+    };
 
-    function renderWeaponBar() {
-      weaponBar.innerHTML = weapons.map((w, i) => `
-        <div class="weapon-slot ${i === state.weaponIndex ? "active" : ""}">
-          <span class="n">${i+1}</span><span class="name">${w.name}</span>
+    // Utils
+    const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+    const lerp  = (a,b,t)=>a + (b-a)*t;
+    const rand  = (a,b)=>Math.random()*(b-a)+a;
+    const fmtN  = (n)=> new Intl.NumberFormat("pt-BR").format(Math.floor(n));
+    const pick  = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+
+    function cloneObj(obj){
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr,y);
+      ctx.arcTo(x+w,y,x+w,y+h,rr);
+      ctx.arcTo(x+w,y+h,x,y+h,rr);
+      ctx.arcTo(x,y+h,x,y,rr);
+      ctx.arcTo(x,y,x+w,y,rr);
+      ctx.closePath();
+    }
+
+    function setCenter(title, text, pills = []) {
+      const pillsHtml = pills.length ? `
+        <div class="subgrid">
+          ${pills.map(p=>`<div class="pill">${p.k}<b>${p.v}</b></div>`).join("")}
+        </div>` : "";
+      ui.centerCard.innerHTML = `<h2>${title}</h2><p>${text}</p>${pillsHtml}`;
+      ui.centerCard.style.display = "block";
+    }
+    function hideCenter(){ ui.centerCard.style.display = "none"; }
+
+    function showBanner(text, type="info", time=2.1){
+      state.banner = { text, type, timer: time };
+      ui.banner.textContent = text;
+      ui.banner.className = `banner show ${type}`;
+    }
+    function updateBanner(dt){
+      if (state.banner.timer > 0) {
+        state.banner.timer -= dt;
+        if (state.banner.timer <= 0) {
+          ui.banner.className = "banner";
+        }
+      }
+    }
+
+    function addFeed(message){
+      state.feed.unshift({ message, t: 7 });
+      state.feed = state.feed.slice(0, 6);
+      renderFeed();
+    }
+    function renderFeed(){
+      ui.killFeed.innerHTML = state.feed.map(item => `<div class="feed-item">${item.message}</div>`).join("");
+    }
+
+    function updateBoot(progress, line){
+      ui.bootBar.style.width = `${Math.round(progress*100)}%`;
+      if (line) {
+        const div = document.createElement("div");
+        div.innerHTML = line;
+        ui.bootLines.prepend(div);
+        while (ui.bootLines.children.length > 8) ui.bootLines.removeChild(ui.bootLines.lastChild);
+      }
+    }
+
+    function renderWeaponBar(){
+      ui.weaponBar.innerHTML = weapons.map((w, i) => `
+        <div class="weapon-slot ${i===state.weaponIndex ? "active":""}">
+          <div class="topline">
+            <span><span class="n">${i+1}</span> <span class="name">${w.name}</span></span>
+            <span class="tiny">${w.damage} dmg</span>
+          </div>
           <div class="sub">${w.sub}</div>
         </div>
       `).join("");
+      ui.weaponChip.textContent = `${state.weaponIndex+1} • ${weapons[state.weaponIndex].name}`;
     }
     renderWeaponBar();
 
-    function setCenter(title, text) {
-      centerMsg.innerHTML = `<h2>${title}</h2><p>${text}</p>`;
-      centerMsg.style.display = "block";
-    }
-    function hideCenter() {
-      centerMsg.style.display = "none";
-    }
-
-    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-    function lerp(a, b, t){ return a + (b - a) * t; }
-    function rand(min, max){ return Math.random() * (max - min) + min; }
-
+    // --------------------------
+    // Data loading
+    // --------------------------
     function fallbackCommitData() {
       const enemies = [];
       const now = new Date();
-      for (let i = 90; i >= 0; i--) {
+      let total = 0;
+      for (let i = 139; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
-        const count = (Math.random() < 0.45) ? 0 : Math.floor(Math.random() * 12) + 1;
+        const count = (Math.random() < 0.48) ? 0 : Math.floor(Math.random() * 14) + 1;
         if (!count) continue;
+        total += count;
         enemies.push({
           date: d.toISOString().slice(0,10),
           count,
-          level: count >= 8 ? "HIGH" : count >= 4 ? "MEDIUM" : "LOW",
-          lane: ((i % 5) - 2) / 2,
-          hp: 24 + count * 10,
-          speed: 0.45 + Math.min(0.5, count * 0.03),
-          kind: count >= 10 ? "boss" : (count >= 6 ? "elite" : "grunt"),
+          level: count >= 10 ? "HIGH" : count >= 4 ? "MEDIUM" : "LOW",
+          lane: [-1,-0.5,0,0.5,1][(i*7)%5],
+          hp: 24 + count * (count >= 14 ? 14 : count >= 8 ? 12 : 9),
+          speed: Math.min(1.2, 0.42 + count * 0.035),
+          kind: count >= 14 ? "boss" : count >= 8 ? "elite" : "grunt",
           label: `${count} commits`
         });
       }
       return {
         generatedAt: new Date().toISOString(),
         username: "jaumnp",
-        totalContributions: enemies.reduce((a, e) => a + e.count, 0),
+        totalContributions: total,
+        windowDays: 140,
         enemies
       };
     }
 
     async function loadCommitRaidData() {
       try {
+        updateBoot(0.22, "<b>[BOOT]</b> buscando <b>docs/data/commit-enemies.json</b>");
         const res = await fetch("./data/commit-enemies.json?ts=" + Date.now(), { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        updateBoot(0.55, "<b>[OK]</b> dados de commits recebidos");
         const data = await res.json();
         if (!data || !Array.isArray(data.enemies)) throw new Error("JSON inválido");
+        updateBoot(0.78, `<b>[OK]</b> ${data.enemies.length} hostis gerados`);
         return data;
       } catch (err) {
-        console.warn("Usando fallback de dados:", err);
+        console.warn("fallback data:", err);
+        updateBoot(0.6, "<b>[WARN]</b> usando dados simulados (fallback)");
         return fallbackCommitData();
       }
     }
 
-    function buildQueue(data) {
+    function buildQueue(data){
       state.username = data.username || "jaumnp";
       state.totalContributions = data.totalContributions || 0;
+      state.generatedAt = data.generatedAt || null;
 
-      // Ordena por data (cronológico), mas promove alguns "bosses" naturalmente pelo count
-      const sorted = [...data.enemies].sort((a,b) => a.date.localeCompare(b.date));
-      state.queue = sorted.map((e, idx) => ({
-        id: idx + "_" + e.date,
-        date: e.date,
-        count: e.count,
-        level: e.level || (e.count >= 8 ? "HIGH" : e.count >= 4 ? "MEDIUM" : "LOW"),
-        lane: clamp(Number(e.lane ?? 0), -1, 1),
-        x: Number(e.lane ?? 0),
-        y: rand(-0.15, 0.14),
-        z: 6 + rand(0.2, 0.9),
-        wobble: rand(0, Math.PI * 2),
-        hp: Math.max(12, Number(e.hp ?? (24 + e.count * 10))),
-        maxHp: Math.max(12, Number(e.hp ?? (24 + e.count * 10))),
-        speed: clamp(Number(e.speed ?? (0.45 + e.count * 0.03)), 0.35, 1.2),
-        kind: e.kind || (e.count >= 10 ? "boss" : e.count >= 6 ? "elite" : "grunt"),
-        label: e.label || `${e.count} commits`
-      }));
+      const sorted = [...data.enemies].sort((a,b)=>a.date.localeCompare(b.date));
+      let topBoss = null;
 
+      state.queue = sorted.map((e, idx) => {
+        const obj = {
+          id: `${idx}_${e.date}`,
+          date: e.date,
+          count: Number(e.count || 0),
+          lane: clamp(Number(e.lane ?? 0), -1, 1),
+          x: Number(e.lane ?? 0),
+          y: rand(-0.14, 0.12),
+          z: 6 + rand(0.2, 0.8),
+          wobble: rand(0, Math.PI*2),
+          hp: Math.max(14, Number(e.hp ?? (24 + e.count*10))),
+          maxHp: Math.max(14, Number(e.hp ?? (24 + e.count*10))),
+          speed: clamp(Number(e.speed ?? (0.45 + e.count * 0.03)), 0.35, 1.25),
+          kind: e.kind || (e.count >= 14 ? "boss" : e.count >= 8 ? "elite" : "grunt"),
+          label: e.label || `${e.count} commits`,
+          bossPrime: false,
+        };
+        if (!topBoss || obj.count > topBoss.count) topBoss = { idx, count: obj.count, date: obj.date };
+        return obj;
+      });
+
+      if (topBoss) {
+        state.queue[topBoss.idx].bossPrime = true;
+        state.bossLabel = `${topBoss.date} • ${topBoss.count} commits`;
+      } else {
+        state.bossLabel = "—";
+      }
+
+      // reset run
       state.queueIndex = 0;
       state.active = [];
       state.particles = [];
+      state.damageTexts = [];
       state.flashes = [];
+      state.shells = [];
+      state.feed = [];
       state.playerHp = 100;
       state.score = 0;
       state.combo = 0;
       state.wave = 1;
+      state.threat = 0;
       state.fireCooldown = 0;
-      state.spawnCooldown = 0.3;
-      state.gameOver = false;
+      state.recoil = 0;
+      state.cameraKickX = 0;
+      state.cameraKickY = 0;
+      state.spawnCooldown = 0.35;
       state.started = true;
       state.loading = false;
+      state.gameOver = false;
+      state.finalGrade = null;
+      state.lastKilledLabel = "—";
+      state.bossSpawned = false;
+
+      renderFeed();
+      updateStaticUI();
 
       if (state.queue.length === 0) {
-        setCenter("Sem commits recentes", "Faça alguns commits e rode a Action para gerar inimigos 😎");
+        setCenter("Sem commits recentes", "Faça commits e rode a Action para transformar o histórico em inimigos 😎", [
+          {k:"Perfil", v:state.username},
+          {k:"Hostis", v:"0"},
+          {k:"Status", v:"Aguardando"}
+        ]);
       } else {
         hideCenter();
+        showBanner("RAID ONLINE • eliminando commits hostis", "info", 2.2);
       }
+    }
+
+    function updateStaticUI(){
+      ui.uiTotal.textContent = fmtN(state.totalContributions);
+      ui.uiBoss.textContent = state.bossLabel;
+      ui.uiLastKill.textContent = state.lastKilledLabel;
+      ui.buildChip.textContent = state.generatedAt
+        ? "dados: " + new Date(state.generatedAt).toLocaleDateString("pt-BR")
+        : "dados: fallback";
+    }
+
+    // --------------------------
+    // Core simulation
+    // --------------------------
+    function projectEnemy(e){
+      const p = 1 / (e.z * 0.23 + 0.09);
+      const sx = W * 0.5 + (e.x + Math.sin(state.time * 2 + e.wobble) * 0.04) * (W * 0.34 * p);
+      const sy = H * 0.53 + (e.y + (1 - e.z / 6.5) * 0.35) * (H * 0.76 * p);
+      const r = clamp((26 + e.count * 2.35) * p, 10, e.bossPrime ? 140 : (e.kind === "boss" ? 120 : 96));
+      return { sx, sy, r, p };
     }
 
     function spawnEnemy() {
       if (state.queueIndex >= state.queue.length) return;
-      const e = structuredClone(state.queue[state.queueIndex++]);
-      e.z = 6.6 + rand(-0.15, 0.35);
+      const e = cloneObj(state.queue[state.queueIndex++]);
+      e.z = 6.5 + rand(-0.1, 0.35);
       e.x = e.lane + rand(-0.08, 0.08);
-      e.y = rand(-0.18, 0.12);
+      e.y = rand(-0.16, 0.12);
+      e.wobble = rand(0, Math.PI*2);
+
       state.active.push(e);
+
+      if ((e.bossPrime || e.kind === "boss") && !state.bossSpawned) {
+        state.bossSpawned = true;
+        showBanner(`⚠ BOSS DETECTADO • ${e.date} • ${e.count} commits`, "alert", 3.1);
+        addFeed(`<b>BOSS</b> ${e.date} • ${e.count} commits entrou na arena`);
+      }
     }
 
-    function screenShakeAmount() {
-      let s = 0;
-      for (const f of state.flashes) s += f.power * f.t;
-      return clamp(s, 0, 18);
-    }
-
-    function projectEnemy(e) {
-      const perspective = 1 / (e.z * 0.23 + 0.09);
-      const sx = W * 0.5 + (e.x + Math.sin(state.time * 2 + e.wobble) * 0.04) * (W * 0.34 * perspective);
-      const sy = H * 0.53 + (e.y + (1 - e.z / 6.5) * 0.35) * (H * 0.75 * perspective);
-      const r = clamp((26 + e.count * 2.4) * perspective, 12, e.kind === "boss" ? 130 : 95);
-      return { sx, sy, r, p: perspective };
-    }
-
-    function addParticles(x, y, count, color) {
-      for (let i = 0; i < count; i++) {
+    function addParticles(x,y,count,color,scale=1){
+      for (let i=0;i<count;i++){
         state.particles.push({
           x, y,
-          vx: rand(-160, 160),
-          vy: rand(-160, 160),
-          life: rand(0.18, 0.5),
+          vx: rand(-180,180)*scale,
+          vy: rand(-180,180)*scale,
+          life: rand(0.15,0.48),
           t: 1,
-          color
+          color,
+          size: rand(1.5, 3.2) * scale
         });
       }
     }
 
-    function shoot() {
-      if (state.loading || state.gameOver) return;
+    function addDamageText(x,y,value,color,crit=false){
+      state.damageTexts.push({
+        x, y,
+        vy: crit ? -42 : -28,
+        life: crit ? 0.75 : 0.55,
+        t: 1,
+        text: crit ? `CRIT ${value}` : `${value}`,
+        color,
+        crit
+      });
+    }
+
+    function addShell(){
+      state.shells.push({
+        x: W*0.57 + rand(-6,8),
+        y: H*0.76 + rand(-4,4),
+        vx: rand(80, 180),
+        vy: rand(-130, -70),
+        life: rand(0.35,0.65),
+        rot: rand(0,Math.PI),
+        vr: rand(-12,12),
+      });
+    }
+
+    function pushFlash(color, power){
+      state.flashes.push({ t:1, power, color });
+    }
+
+    function fireCurrentWeapon() {
+      if (state.loading || state.gameOver || !state.started) return;
       const w = weapons[state.weaponIndex];
       if (state.fireCooldown > 0) return;
-      state.fireCooldown = 1 / w.fireRate;
-      state.flashes.push({ t: 1, power: 6 + w.damage * 0.12, color: w.color });
 
-      // hitscan: escolhe o alvo mais próximo no eixo Z que esteja sob a mira
+      state.fireCooldown = 1 / w.fireRate;
+
+      // recoil/camera
+      state.recoil += 1.8 + (w.damage * 0.015);
+      state.cameraKickX += rand(-2.5, 2.5);
+      state.cameraKickY += rand(-3.6, -1.6);
+
+      pushFlash(w.color, 6 + w.damage*0.11);
+      addShell();
+
       let best = null;
-      for (const e of state.active) {
+      for (const e of state.active){
         const pr = projectEnemy(e);
         const dx = state.mouseX - pr.sx;
         const dy = state.mouseY - pr.sy;
         const dist = Math.hypot(dx, dy);
-        const spreadPenalty = (Math.random() * w.spread) * pr.r * 4.5;
+        const spreadPenalty = (Math.random() * w.spread) * pr.r * 4.8;
         const hitThreshold = pr.r + w.hitRadius * 0.35 - spreadPenalty;
         if (dist <= hitThreshold) {
           if (!best || e.z < best.e.z) best = { e, pr, dist };
         }
       }
 
-      if (!best) {
-        // tiro no vazio
-        addParticles(state.mouseX, state.mouseY, 4, "rgba(255,255,255,.4)");
+      if (!best){
+        addParticles(state.mouseX, state.mouseY, 4, "rgba(255,255,255,.4)", 0.8);
         state.combo = 0;
         return;
       }
 
       const target = best.e;
-      const hitX = lerp(best.pr.sx, state.mouseX, 0.25);
-      const hitY = lerp(best.pr.sy, state.mouseY, 0.25);
+      const pr = best.pr;
+      const hitX = lerp(pr.sx, state.mouseX, 0.2);
+      const hitY = lerp(pr.sy, state.mouseY, 0.2);
 
-      target.hp -= w.damage;
+      let damage = w.damage;
+      const crit = Math.random() < (w.crit || 0);
+      if (crit) damage = Math.round(damage * 1.65);
 
-      if (w.splash) {
-        for (const e of state.active) {
+      target.hp -= damage;
+      addDamageText(hitX + rand(-6,6), hitY - rand(8,16), damage, w.color, crit);
+      addParticles(hitX, hitY, crit ? 18 : 10, w.color, crit ? 1.15 : 1);
+
+      if (w.splash){
+        for (const e of state.active){
           if (e === target) continue;
-          const pr2 = projectEnemy(e);
-          const d = Math.hypot(pr2.sx - hitX, pr2.sy - hitY);
-          if (d < w.splash) {
-            e.hp -= Math.floor(w.damage * 0.35);
+          const p2 = projectEnemy(e);
+          const d = Math.hypot(p2.sx - hitX, p2.sy - hitY);
+          if (d < w.splash){
+            const splashDmg = Math.floor(w.damage * 0.34);
+            e.hp -= splashDmg;
+            addDamageText(p2.sx + rand(-5,5), p2.sy - 6, splashDmg, "rgba(255,128,191,.9)", false);
           }
         }
       }
 
-      addParticles(hitX, hitY, 10, w.color);
-
-      if (target.hp <= 0) {
-        const bonus = Math.floor(target.count * 10 * (1 + state.combo * 0.06));
+      if (target.hp <= 0){
+        const kindMul = target.bossPrime ? 3.3 : target.kind === "boss" ? 2.4 : target.kind === "elite" ? 1.5 : 1;
+        const bonus = Math.floor(target.count * 10 * kindMul * (1 + state.combo * 0.06));
         state.score += bonus;
         state.combo++;
         state.lastKilledLabel = `${target.date} • ${target.count} commits`;
-        addParticles(best.pr.sx, best.pr.sy, target.kind === "boss" ? 28 : 16, "#ffffff");
+        ui.uiLastKill.textContent = state.lastKilledLabel;
+
+        addFeed(
+          `<b>${target.kind.toUpperCase()}</b> eliminado • ${target.date} • +${fmtN(bonus)} pts`
+        );
+
+        if (target.bossPrime) {
+          showBanner("BOSS DO RAID ELIMINADO ✅", "ok", 2.6);
+        }
+
+        addParticles(pr.sx, pr.sy, target.bossPrime ? 30 : target.kind === "elite" ? 18 : 14, "#ffffff", target.bossPrime ? 1.2 : 1);
         state.active = state.active.filter(e => e !== target);
       }
     }
 
-    window.addEventListener("mousemove", (e) => {
+    window.addEventListener("mousemove", (e)=>{
       state.mouseX = e.clientX;
       state.mouseY = e.clientY;
     });
-    window.addEventListener("mousedown", () => shoot());
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key >= "1" && e.key <= "4") {
-        state.weaponIndex = Number(e.key) - 1;
+    window.addEventListener("mousedown", ()=> fireCurrentWeapon());
+    window.addEventListener("keydown", (e)=>{
+      if (e.key >= "1" && e.key <= "4"){
+        state.weaponIndex = Number(e.key)-1;
         renderWeaponBar();
       }
-      if (e.key.toLowerCase() === "r") {
-        state.seedTick++;
+      if (e.key.toLowerCase() === "r"){
         buildQueue(window.__raidData || fallbackCommitData());
+        showBanner("RAID REINICIADO", "info", 1.5);
       }
-      if (e.code === "Space") shoot();
+      if (e.code === "Space"){
+        fireCurrentWeapon();
+      }
     });
 
-    function update(dt) {
+    function calculateThreat(){
+      let t = 0;
+      for (const e of state.active){
+        const weight = (1 / Math.max(0.18, e.z)) * (0.8 + e.count * 0.04);
+        t += weight * (e.bossPrime ? 1.65 : e.kind === "elite" ? 1.2 : 1);
+      }
+      state.threat = clamp(t * 8, 0, 100);
+    }
+
+    function computeGrade(){
+      const hp = state.playerHp;
+      if (hp >= 85 && state.score > 3500) return "S";
+      if (hp >= 65) return "A";
+      if (hp >= 40) return "B";
+      if (hp >= 15) return "C";
+      return "D";
+    }
+
+    function update(dt){
       state.time += dt;
-      if (!state.started) return;
+      state.dtSmooth = lerp(state.dtSmooth, dt, 0.08);
+      state.fps = 1 / Math.max(0.0001, state.dtSmooth);
 
+      // decay UI things
       state.fireCooldown = Math.max(0, state.fireCooldown - dt);
-      state.spawnCooldown -= dt;
+      state.recoil = Math.max(0, state.recoil - dt * 9);
+      state.cameraKickX = lerp(state.cameraKickX, 0, dt * 10);
+      state.cameraKickY = lerp(state.cameraKickY, 0, dt * 10);
 
-      // Progressão de wave
-      const processed = state.queueIndex + (window.__raidData?.enemies?.length ? 0 : 0);
-      state.wave = 1 + Math.floor((state.queueIndex + state.score / 500) / 20);
+      updateBanner(dt);
 
-      // Spawn control
-      const maxActive = clamp(3 + Math.floor(state.wave * 0.5), 3, 8);
-      if (!state.gameOver && state.spawnCooldown <= 0 && state.active.length < maxActive && state.queueIndex < state.queue.length) {
-        spawnEnemy();
-        const cadence = Math.max(0.22, 0.65 - state.wave * 0.03);
-        state.spawnCooldown = cadence * rand(0.85, 1.15);
+      for (let i = state.feed.length - 1; i >= 0; i--){
+        state.feed[i].t -= dt;
+        if (state.feed[i].t <= 0) state.feed.splice(i,1);
+      }
+      renderFeed();
+
+      if (!state.started || state.loading) return;
+
+      if (!state.gameOver){
+        state.spawnCooldown -= dt;
+
+        state.wave = 1 + Math.floor((state.queueIndex + state.score / 600) / 18);
+        const maxActive = clamp(3 + Math.floor(state.wave * 0.55), 3, 9);
+        if (state.spawnCooldown <= 0 && state.active.length < maxActive && state.queueIndex < state.queue.length){
+          spawnEnemy();
+          const cadence = Math.max(0.2, 0.62 - state.wave * 0.028);
+          state.spawnCooldown = cadence * rand(0.85, 1.18);
+        }
       }
 
-      // Atualiza inimigos
-      for (let i = state.active.length - 1; i >= 0; i--) {
+      // update enemies
+      for (let i = state.active.length - 1; i >= 0; i--){
         const e = state.active[i];
-        e.z -= dt * (e.speed + state.wave * 0.02);
-        e.wobble += dt * (0.7 + e.speed * 0.4);
-        e.x += Math.sin(state.time * (0.8 + e.speed) + e.wobble) * dt * 0.02;
-        e.x = clamp(e.x, -1.15, 1.15);
+        e.z -= dt * (e.speed + state.wave * 0.018 + (e.bossPrime ? 0.04 : 0));
+        e.wobble += dt * (0.7 + e.speed * 0.35);
+        e.x += Math.sin(state.time * (0.8 + e.speed) + e.wobble) * dt * (e.bossPrime ? 0.03 : 0.02);
+        e.x = clamp(e.x, -1.16, 1.16);
 
-        if (e.hp <= 0) {
+        if (e.hp <= 0){
           state.active.splice(i,1);
           continue;
         }
 
-        if (e.z <= 0.18) {
-          const damage = clamp(Math.floor(e.count * (e.kind === "boss" ? 1.8 : 1.0)), 4, 30);
-          state.playerHp = Math.max(0, state.playerHp - damage);
+        if (!state.gameOver && e.z <= 0.18){
+          const dmg = clamp(Math.floor(e.count * (e.bossPrime ? 2.4 : e.kind === "boss" ? 1.8 : 1)), 4, 35);
+          state.playerHp = Math.max(0, state.playerHp - dmg);
           state.combo = 0;
-          state.flashes.push({ t: 1, power: 12, color: "#ff5a7a" });
-          addParticles(W/2, H*0.62, 18, "#ff5a7a");
-          state.active.splice(i, 1);
-          if (state.playerHp <= 0) {
+          pushFlash("#ff5a7a", 12);
+          state.cameraKickY += 4;
+          addParticles(W/2, H*0.63, e.bossPrime ? 26 : 18, "#ff5a7a", 1.1);
+          addFeed(`<b>HIT</b> ${e.date} atingiu o núcleo • -${dmg} HP`);
+          state.active.splice(i,1);
+
+          if (state.playerHp <= 0){
             state.gameOver = true;
-            setCenter("SYSTEM BREACH", `Score: ${state.score} • Pressione R para reiniciar`);
+            state.finalGrade = computeGrade();
+            setCenter(
+              "SYSTEM BREACH ❌",
+              "Os commits hostis romperam o núcleo. Pressione R para tentar novamente.",
+              [
+                {k:"Score", v:fmtN(state.score)},
+                {k:"Rank", v:state.finalGrade},
+                {k:"HP", v:`${state.playerHp}%`}
+              ]
+            );
+            showBanner("RAID FALHOU", "alert", 2.3);
           }
         }
       }
 
-      // Partículas
-      for (let i = state.particles.length - 1; i >= 0; i--) {
+      // particles
+      for (let i = state.particles.length - 1; i >= 0; i--){
         const p = state.particles[i];
         p.life -= dt;
         p.t = Math.max(0, p.life / 0.5);
         p.x += p.vx * dt;
         p.y += p.vy * dt;
-        p.vx *= 0.97;
-        p.vy *= 0.97;
+        p.vx *= 0.96;
+        p.vy *= 0.96;
         if (p.life <= 0) state.particles.splice(i,1);
       }
 
-      // flashes / shake
-      for (let i = state.flashes.length - 1; i >= 0; i--) {
+      // damage texts
+      for (let i = state.damageTexts.length - 1; i >= 0; i--){
+        const d = state.damageTexts[i];
+        d.life -= dt;
+        d.t = Math.max(0, d.life / 0.75);
+        d.y += d.vy * dt;
+        d.x += Math.sin(state.time * 10 + i) * 9 * dt;
+        if (d.life <= 0) state.damageTexts.splice(i,1);
+      }
+
+      // shells
+      for (let i = state.shells.length - 1; i >= 0; i--){
+        const s = state.shells[i];
+        s.life -= dt;
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vy += 260 * dt;
+        s.rot += s.vr * dt;
+        if (s.life <= 0) state.shells.splice(i,1);
+      }
+
+      // flashes
+      for (let i = state.flashes.length - 1; i >= 0; i--){
         const f = state.flashes[i];
         f.t -= dt * 5;
         if (f.t <= 0) state.flashes.splice(i,1);
       }
 
-      // Encerramento da rodada
-      if (!state.gameOver && state.queueIndex >= state.queue.length && state.active.length === 0 && state.queue.length > 0) {
+      calculateThreat();
+
+      // raid complete
+      if (!state.gameOver && state.queueIndex >= state.queue.length && state.active.length === 0 && state.queue.length > 0){
         state.gameOver = true;
-        setCenter("RAID COMPLETO ✅", `Score final: ${state.score} • Pressione R para jogar de novo`);
+        state.finalGrade = computeGrade();
+        setCenter(
+          "RAID COMPLETO ✅",
+          "Todos os commits hostis foram neutralizados. Pressione R para jogar novamente.",
+          [
+            {k:"Score", v:fmtN(state.score)},
+            {k:"Rank", v:state.finalGrade},
+            {k:"HP", v:`${state.playerHp}%`}
+          ]
+        );
+        showBanner(`MISSÃO CONCLUÍDA • RANK ${state.finalGrade}`, "ok", 3.0);
       }
+
+      updateHUD();
     }
 
-    function drawBackground() {
-      // céu / névoa
-      const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, "#111827");
-      g.addColorStop(0.55, "#0b0f17");
-      g.addColorStop(1, "#07090d");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
+    function updateHUD(){
+      const remaining = Math.max(0, state.queue.length - state.queueIndex + state.active.length);
 
-      // stars / pixels
-      const starCount = Math.floor((W * H) / 18000);
-      ctx.globalAlpha = 0.35;
-      for (let i = 0; i < starCount; i++) {
-        const x = (i * 97 + Math.floor(state.time * 20)) % W;
-        const y = (i * 57 + Math.floor(state.time * 8)) % H;
-        ctx.fillStyle = i % 7 === 0 ? "rgba(121,168,255,.8)" : "rgba(255,255,255,.7)";
-        ctx.fillRect(x, y, 1.2, 1.2);
+      ui.uiHp.textContent = `${state.playerHp}`;
+      ui.uiScore.textContent = fmtN(state.score);
+      ui.uiCombo.textContent = `x${state.combo}`;
+      ui.uiWave.textContent = `${state.wave}`;
+      ui.uiRemain.textContent = `${remaining}`;
+      ui.uiFps.textContent = `${Math.round(state.fps)}`;
+
+      const hpPct = clamp(state.playerHp, 0, 100);
+      ui.hpBar.style.width = `${hpPct}%`;
+      ui.hpPct.textContent = `${hpPct}%`;
+      ui.hpBar.style.color = hpPct > 60 ? "#63ffa6" : hpPct > 30 ? "#ffd166" : "#ff5a7a";
+
+      const comboPct = clamp(state.combo * 8, 0, 100);
+      ui.comboBar.style.width = `${comboPct}%`;
+      ui.comboVal.textContent = state.combo > 0 ? `x${state.combo}` : "0";
+      ui.comboBar.style.color = state.combo > 8 ? "#ff80bf" : "#79a8ff";
+
+      ui.threatBar.style.width = `${state.threat}%`;
+      ui.threatBar.style.color = state.threat > 70 ? "#ff5a7a" : state.threat > 35 ? "#ffd166" : "#63ffa6";
+      ui.threatVal.textContent = state.threat > 70 ? "CRÍTICA" : state.threat > 35 ? "MÉDIA" : "BAIXA";
+    }
+
+    // --------------------------
+    // Rendering
+    // --------------------------
+    function screenShake(){
+      let s = 0;
+      for (const f of state.flashes) s += f.power * Math.max(0, f.t);
+      return clamp(s, 0, 18) + state.recoil * 1.1;
+    }
+
+    function drawBackground(){
+      const sky = ctx.createLinearGradient(0,0,0,H);
+      sky.addColorStop(0, "#101726");
+      sky.addColorStop(.45, "#090d15");
+      sky.addColorStop(1, "#06080c");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0,0,W,H);
+
+      // stars / digital noise
+      const n = Math.floor((W * H) / 19000);
+      ctx.globalAlpha = 0.33;
+      for (let i=0;i<n;i++){
+        const x = (i*97 + Math.floor(state.time*22)) % W;
+        const y = (i*59 + Math.floor(state.time*10)) % H;
+        ctx.fillStyle = (i % 8 === 0) ? "rgba(121,168,255,.9)" : "rgba(255,255,255,.65)";
+        ctx.fillRect(x, y, 1.1, 1.1);
       }
       ctx.globalAlpha = 1;
 
-      // horizonte
-      ctx.strokeStyle = "rgba(121,168,255,.22)";
+      // horizon glow
+      const glow = ctx.createRadialGradient(W*0.5, H*0.55, 10, W*0.5, H*0.55, W*0.42);
+      glow.addColorStop(0, "rgba(121,168,255,.12)");
+      glow.addColorStop(1, "rgba(121,168,255,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0,0,W,H);
+
+      // horizon line
+      ctx.strokeStyle = "rgba(121,168,255,.24)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(0, H * 0.53);
-      ctx.lineTo(W, H * 0.53);
+      ctx.moveTo(0, H*0.53);
+      ctx.lineTo(W, H*0.53);
       ctx.stroke();
 
-      // grid em perspectiva
+      // perspective grid
       ctx.strokeStyle = "rgba(121,168,255,.12)";
-      for (let i = -8; i <= 8; i++) {
-        const x = W / 2 + i * (W * 0.07);
+      for (let i=-9;i<=9;i++){
+        const x = W/2 + i * (W*0.065);
         ctx.beginPath();
         ctx.moveTo(x, H);
-        ctx.lineTo(W / 2 + i * 8, H * 0.53);
+        ctx.lineTo(W/2 + i*8, H*0.53);
         ctx.stroke();
       }
-      for (let i = 1; i <= 18; i++) {
+      for (let i=1;i<=18;i++){
         const t = i / 18;
-        const y = lerp(H, H * 0.53, Math.pow(t, 0.65));
+        const y = lerp(H, H*0.53, Math.pow(t, .66));
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(W, y);
@@ -563,197 +1284,388 @@
       }
     }
 
-    function drawEnemy(e) {
+    function drawEnemy(e){
       const pr = projectEnemy(e);
 
-      // sombra
-      ctx.fillStyle = "rgba(0,0,0,.25)";
+      // shadow
+      ctx.fillStyle = "rgba(0,0,0,.28)";
       ctx.beginPath();
-      ctx.ellipse(pr.sx, pr.sy + pr.r * 0.8, pr.r * 0.7, pr.r * 0.26, 0, 0, Math.PI * 2);
+      ctx.ellipse(pr.sx, pr.sy + pr.r*0.82, pr.r*0.72, pr.r*0.26, 0, 0, Math.PI*2);
       ctx.fill();
 
-      // cor por tier
-      let fill = "rgba(121,168,255,.9)";
-      let stroke = "rgba(121,168,255,1)";
-      if (e.kind === "elite") { fill = "rgba(255,209,102,.9)"; stroke = "rgba(255,209,102,1)"; }
-      if (e.kind === "boss")  { fill = "rgba(255,90,122,.9)";  stroke = "rgba(255,90,122,1)"; }
+      // aura
+      if (e.bossPrime || e.kind === "boss"){
+        const aura = ctx.createRadialGradient(pr.sx, pr.sy, pr.r*0.3, pr.sx, pr.sy, pr.r*1.8);
+        aura.addColorStop(0, e.bossPrime ? "rgba(255,90,122,.22)" : "rgba(255,209,102,.16)");
+        aura.addColorStop(1, "rgba(255,90,122,0)");
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(pr.sx, pr.sy, pr.r*1.8, 0, Math.PI*2);
+        ctx.fill();
+      }
 
-      // corpo "drone commit"
+      let fill = "rgba(121,168,255,.94)";
+      let stroke = "rgba(121,168,255,1)";
+      let eye = "rgba(255,255,255,.95)";
+      if (e.kind === "elite"){ fill = "rgba(255,209,102,.93)"; stroke = "rgba(255,209,102,1)"; eye = "#fff8d7"; }
+      if (e.kind === "boss"){ fill = "rgba(255,90,122,.92)"; stroke = "rgba(255,90,122,1)"; eye = "#ffe6ee"; }
+      if (e.bossPrime){ fill = "rgba(255,80,110,.95)"; stroke = "rgba(255,120,140,1)"; eye = "#ffffff"; }
+
       ctx.save();
       ctx.translate(pr.sx, pr.sy);
-      ctx.rotate(Math.sin(state.time * 2 + e.wobble) * 0.08);
+      ctx.rotate(Math.sin(state.time * 2 + e.wobble) * 0.07);
+
+      const bodyW = pr.r * (e.bossPrime ? 1.55 : 1.34);
+      const bodyH = pr.r * (e.bossPrime ? 1.25 : 1.04);
+      const corner = Math.max(5, pr.r * 0.22);
+
+      // outer chassis
       ctx.fillStyle = fill;
       ctx.strokeStyle = stroke;
       ctx.lineWidth = 2;
-
-      const bodyW = pr.r * 1.35;
-      const bodyH = pr.r * 1.05;
-      roundRect(ctx, -bodyW/2, -bodyH/2, bodyW, bodyH, Math.max(6, pr.r * 0.22));
+      roundRect(ctx, -bodyW/2, -bodyH/2, bodyW, bodyH, corner);
       ctx.fill();
       ctx.stroke();
 
-      // "pixels" internos (commits)
-      const dots = clamp(e.count, 1, 16);
-      for (let i = 0; i < dots; i++) {
-        const cols = 4;
-        const cx = (i % cols);
+      // top plate
+      ctx.fillStyle = "rgba(7,10,15,.20)";
+      roundRect(ctx, -bodyW*0.42, -bodyH*0.38, bodyW*0.84, bodyH*0.25, corner*0.7);
+      ctx.fill();
+
+      // commit cells
+      const dots = clamp(e.count, 1, 20);
+      const cols = 4;
+      for (let i=0;i<dots;i++){
+        const cx = i % cols;
         const cy = Math.floor(i / cols);
-        const px = -bodyW * 0.32 + cx * (bodyW * 0.2);
-        const py = -bodyH * 0.2 + cy * (bodyH * 0.18);
-        ctx.fillStyle = "rgba(7,10,15,.8)";
-        ctx.fillRect(px, py, Math.max(2, pr.r*0.14), Math.max(2, pr.r*0.14));
+        const px = -bodyW*0.34 + cx * (bodyW * 0.21);
+        const py = -bodyH*0.14 + cy * (bodyH * 0.19);
+        ctx.fillStyle = "rgba(8,11,16,.78)";
+        ctx.fillRect(px, py, Math.max(2, pr.r*0.12), Math.max(2, pr.r*0.12));
       }
 
-      // "olho"
-      ctx.fillStyle = "rgba(255,255,255,.95)";
+      // eye + eye glow
+      ctx.shadowBlur = pr.r * 0.35;
+      ctx.shadowColor = eye;
+      ctx.fillStyle = eye;
       ctx.beginPath();
-      ctx.arc(0, -pr.r * 0.05, Math.max(2.5, pr.r * 0.14), 0, Math.PI * 2);
+      ctx.arc(0, -pr.r*0.03, Math.max(2.5, pr.r*0.13), 0, Math.PI*2);
       ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // side bits
+      ctx.strokeStyle = "rgba(255,255,255,.22)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-bodyW/2, 0); ctx.lineTo(-bodyW/2 - pr.r*0.16, 0);
+      ctx.moveTo(bodyW/2, 0); ctx.lineTo(bodyW/2 + pr.r*0.16, 0);
+      ctx.stroke();
 
       ctx.restore();
 
       // HP bar
-      const hpW = pr.r * 1.5;
-      const hpH = 5;
+      const hpW = pr.r * 1.52;
+      const hpH = Math.max(4, pr.r * 0.12);
       const hpX = pr.sx - hpW/2;
-      const hpY = pr.sy - pr.r - 12;
-      ctx.fillStyle = "rgba(255,255,255,.12)";
-      roundRect(ctx, hpX, hpY, hpW, hpH, 3); ctx.fill();
-      ctx.fillStyle = e.kind === "boss" ? "#ff5a7a" : (e.kind === "elite" ? "#ffd166" : "#63ffa6");
-      roundRect(ctx, hpX, hpY, hpW * clamp(e.hp/e.maxHp, 0, 1), hpH, 3); ctx.fill();
+      const hpY = pr.sy - pr.r - 14;
+      ctx.fillStyle = "rgba(255,255,255,.1)";
+      roundRect(ctx, hpX, hpY, hpW, hpH, hpH/2); ctx.fill();
 
-      // label
-      if (pr.r > 20) {
+      const hpRatio = clamp(e.hp/e.maxHp, 0, 1);
+      ctx.fillStyle = e.bossPrime ? "#ff5a7a" : (e.kind === "elite" ? "#ffd166" : "#63ffa6");
+      roundRect(ctx, hpX, hpY, hpW * hpRatio, hpH, hpH/2); ctx.fill();
+
+      if (pr.r > 18){
         ctx.font = "600 11px Inter, system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(232,236,255,.9)";
+        ctx.fillStyle = "rgba(237,242,255,.9)";
         ctx.fillText(`${e.date} • ${e.count}`, pr.sx, pr.sy + pr.r + 16);
       }
     }
 
-    function roundRect(ctx, x, y, w, h, r) {
-      const rr = Math.min(r, w/2, h/2);
-      ctx.beginPath();
-      ctx.moveTo(x+rr, y);
-      ctx.arcTo(x+w, y, x+w, y+h, rr);
-      ctx.arcTo(x+w, y+h, x, y+h, rr);
-      ctx.arcTo(x, y+h, x, y, rr);
-      ctx.arcTo(x, y, x+w, y, rr);
-      ctx.closePath();
+    function drawParticles(){
+      for (const p of state.particles){
+        ctx.globalAlpha = clamp(p.t, 0, 1);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
+      ctx.globalAlpha = 1;
     }
 
-    function drawReticle() {
-      const x = state.mouseX, y = state.mouseY;
-      const pulse = 1 + Math.sin(state.time * 8) * 0.08;
-      ctx.strokeStyle = "rgba(232,236,255,.85)";
-      ctx.lineWidth = 1.5;
+    function drawDamageTexts(){
+      for (const d of state.damageTexts){
+        ctx.globalAlpha = clamp(d.t,0,1);
+        ctx.font = d.crit ? "800 13px Inter, system-ui, sans-serif" : "700 12px Inter, system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = d.color;
+        if (d.crit){
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = d.color;
+        }
+        ctx.fillText(d.text, d.x, d.y);
+        ctx.shadowBlur = 0;
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawShells(){
+      for (const s of state.shells){
+        ctx.save();
+        ctx.globalAlpha = clamp(s.life / 0.65, 0, 1);
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rot);
+        ctx.fillStyle = "rgba(255,220,140,.9)";
+        ctx.fillRect(-1.8, -0.9, 3.6, 1.8);
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawReticle(){
+      const x = state.mouseX;
+      const y = state.mouseY;
+      const spread = 12 + state.recoil * 2.1;
+      const pulse = 1 + Math.sin(state.time * 8) * 0.06;
+
+      ctx.strokeStyle = "rgba(237,242,255,.88)";
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.arc(x, y, 10 * pulse, 0, Math.PI * 2);
+      ctx.arc(x, y, 9 * pulse, 0, Math.PI*2);
       ctx.stroke();
 
-      ctx.strokeStyle = "rgba(121,168,255,.7)";
+      ctx.strokeStyle = "rgba(121,168,255,.8)";
       ctx.beginPath();
-      ctx.moveTo(x - 18, y); ctx.lineTo(x - 6, y);
-      ctx.moveTo(x + 6, y); ctx.lineTo(x + 18, y);
-      ctx.moveTo(x, y - 18); ctx.lineTo(x, y - 6);
-      ctx.moveTo(x, y + 6); ctx.lineTo(x, y + 18);
+      ctx.moveTo(x - spread - 10, y); ctx.lineTo(x - spread, y);
+      ctx.moveTo(x + spread, y); ctx.lineTo(x + spread + 10, y);
+      ctx.moveTo(x, y - spread - 10); ctx.lineTo(x, y - spread);
+      ctx.moveTo(x, y + spread); ctx.lineTo(x, y + spread + 10);
       ctx.stroke();
 
-      if (state.fireCooldown > 0) {
-        ctx.strokeStyle = "rgba(255,255,255,.25)";
+      // center dot
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.beginPath();
+      ctx.arc(x, y, 1.8, 0, Math.PI*2);
+      ctx.fill();
+
+      // fire cooldown ring
+      const w = weapons[state.weaponIndex];
+      if (state.fireCooldown > 0){
+        const ratio = clamp(state.fireCooldown * w.fireRate, 0, 1);
+        ctx.strokeStyle = "rgba(255,255,255,.22)";
+        ctx.lineWidth = 1.3;
         ctx.beginPath();
-        ctx.arc(x, y, 14, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * (state.fireCooldown * weapons[state.weaponIndex].fireRate));
+        ctx.arc(x, y, 14, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * ratio);
         ctx.stroke();
       }
     }
 
-    function drawParticles() {
-      for (const p of state.particles) {
-        ctx.globalAlpha = clamp(p.t, 0, 1);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, 2.2, 2.2);
-      }
+    function drawWeaponModel(){
+      // "fake weapon" HUD lower center-right for wow visual
+      const w = weapons[state.weaponIndex];
+      const baseX = W * 0.62 + state.cameraKickX * 0.15;
+      const baseY = H * 0.83 + state.cameraKickY * 0.12 + state.recoil * 2.4;
+
+      ctx.save();
+      ctx.translate(baseX, baseY);
+      ctx.rotate(-0.12 + Math.sin(state.time * 2) * 0.01);
+
+      // glow
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = w.color;
+
+      ctx.fillStyle = "rgba(14,18,28,.85)";
+      roundRect(ctx, -8, -16, 120, 24, 7); ctx.fill(); // body
+      roundRect(ctx, 42, -24, 52, 10, 5); ctx.fill(); // upper rail
+      roundRect(ctx, 90, -10, 24, 7, 4); ctx.fill(); // barrel
+      roundRect(ctx, 18, 4, 14, 28, 4); ctx.fill(); // grip
+      roundRect(ctx, -2, -6, 18, 10, 4); ctx.fill(); // stock bit
+
+      // accent line
+      ctx.fillStyle = w.color;
+      ctx.globalAlpha = 0.9;
+      ctx.fillRect(8, -7, 58, 2.4);
       ctx.globalAlpha = 1;
+
+      // muzzle flash
+      if (state.fireCooldown > (1 / w.fireRate) * 0.65){
+        ctx.shadowBlur = 22;
+        ctx.shadowColor = w.color;
+        ctx.fillStyle = w.color;
+        ctx.beginPath();
+        ctx.moveTo(114, -7);
+        ctx.lineTo(128 + rand(-2,2), -2);
+        ctx.lineTo(114, 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+      ctx.shadowBlur = 0;
     }
 
-    function drawFlashOverlay() {
-      for (const f of state.flashes) {
-        ctx.globalAlpha = Math.max(0, f.t) * 0.12;
+    function drawVignetteAndFlashes(){
+      // flashes
+      for (const f of state.flashes){
+        ctx.globalAlpha = Math.max(0, f.t) * 0.11;
         ctx.fillStyle = f.color;
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillRect(0,0,W,H);
       }
       ctx.globalAlpha = 1;
+
+      // HP danger vignette
+      if (state.playerHp < 35){
+        const a = (35 - state.playerHp) / 35;
+        const vg = ctx.createRadialGradient(W/2, H/2, Math.min(W,H)*0.15, W/2, H/2, Math.max(W,H)*0.8);
+        vg.addColorStop(0, "rgba(0,0,0,0)");
+        vg.addColorStop(1, `rgba(255,90,122,${0.22*a})`);
+        ctx.fillStyle = vg;
+        ctx.fillRect(0,0,W,H);
+      }
     }
 
-    function drawHUDText() {
-      const remaining = Math.max(0, state.queue.length - state.queueIndex + state.active.length);
-      leftStats.innerHTML = `
-        <span>HP: <b>${state.playerHp}</b></span>
-        <span>Score: <b>${state.score}</b></span>
-        <span>Combo: <b>x${state.combo}</b></span>
-      `;
-      rightStats.innerHTML = `
-        <span>Wave: <b>${state.wave}</b></span>
-        <span>Inimigos restantes: <b>${remaining}</b></span>
-        <span>Total commits: <b>${state.totalContributions}</b></span>
-      `;
+    function drawCenterInfoText(){
+      if (!state.loading && !state.gameOver && state.lastKilledLabel !== "—"){
+        ctx.font = "600 12px Inter, system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(237,242,255,.68)";
+        ctx.fillText(`Último alvo: ${state.lastKilledLabel}`, W/2, H - 82);
+      }
     }
 
-    function draw() {
-      const shake = screenShakeAmount();
-      const ox = (Math.random() - 0.5) * shake;
-      const oy = (Math.random() - 0.5) * shake;
+    function drawRadar(){
+      const w = radarCanvas.width;
+      const h = radarCanvas.height;
+      rctx.clearRect(0,0,w,h);
+
+      // bg
+      rctx.fillStyle = "rgba(9,13,20,.9)";
+      rctx.fillRect(0,0,w,h);
+
+      rctx.save();
+      rctx.translate(w/2, h/2);
+
+      // rings
+      rctx.strokeStyle = "rgba(121,168,255,.18)";
+      rctx.lineWidth = 1;
+      [18, 34, 52, 70].forEach(r => {
+        rctx.beginPath(); rctx.arc(0,0,r,0,Math.PI*2); rctx.stroke();
+      });
+      // cross
+      rctx.beginPath();
+      rctx.moveTo(-76,0); rctx.lineTo(76,0);
+      rctx.moveTo(0,-76); rctx.lineTo(0,76);
+      rctx.stroke();
+
+      // sweep
+      const ang = state.time * 1.6;
+      const sweep = rctx.createRadialGradient(0,0,8,0,0,80);
+      sweep.addColorStop(0, "rgba(99,255,166,.22)");
+      sweep.addColorStop(1, "rgba(99,255,166,0)");
+      rctx.save();
+      rctx.rotate(ang);
+      rctx.fillStyle = sweep;
+      rctx.beginPath();
+      rctx.moveTo(0,0);
+      rctx.arc(0,0,78,-0.15,0.15);
+      rctx.closePath();
+      rctx.fill();
+      rctx.restore();
+
+      // player center
+      rctx.fillStyle = "rgba(237,242,255,.95)";
+      rctx.beginPath(); rctx.arc(0,0,2.8,0,Math.PI*2); rctx.fill();
+
+      // enemies: map x lane and z distance
+      for (const e of state.active){
+        const rx = clamp(e.x, -1.2, 1.2) * 55;
+        const rz = clamp(e.z, 0.18, 6.8);
+        const ry = lerp(70, 8, 1 - ((rz - 0.18) / (6.8 - 0.18))); // closer = lower on radar
+        let col = "rgba(121,168,255,.95)";
+        if (e.kind === "elite") col = "rgba(255,209,102,.95)";
+        if (e.kind === "boss" || e.bossPrime) col = "rgba(255,90,122,.95)";
+        rctx.fillStyle = col;
+        rctx.beginPath();
+        rctx.arc(rx, ry, e.bossPrime ? 3.8 : (e.kind === "elite" ? 3 : 2.4), 0, Math.PI*2);
+        rctx.fill();
+      }
+
+      rctx.restore();
+    }
+
+    function draw(){
+      const shake = screenShake();
+      const ox = (Math.random() - 0.5) * shake + state.cameraKickX;
+      const oy = (Math.random() - 0.5) * shake + state.cameraKickY;
 
       ctx.save();
       ctx.translate(ox, oy);
 
       drawBackground();
 
-      // ordenar por profundidade (mais longe primeiro)
-      const sorted = [...state.active].sort((a,b) => b.z - a.z);
+      // enemies sorted by depth
+      const sorted = [...state.active].sort((a,b)=> b.z - a.z);
       for (const e of sorted) drawEnemy(e);
 
-      // beam / aim line leve
-      if (!state.loading && !state.gameOver) {
+      // sightline (subtle)
+      if (!state.loading && !state.gameOver){
         ctx.strokeStyle = "rgba(121,168,255,.12)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(W/2, H*0.82);
+        ctx.moveTo(W/2, H*0.83);
         ctx.lineTo(state.mouseX, state.mouseY);
         ctx.stroke();
       }
 
       drawParticles();
+      drawShells();
+      drawDamageTexts();
+      drawWeaponModel();
       drawReticle();
-      drawFlashOverlay();
-
-      // última kill
-      if (state.lastKilledLabel && !state.gameOver) {
-        ctx.font = "600 12px Inter, system-ui, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "rgba(232,236,255,.65)";
-        ctx.fillText("Último alvo: " + state.lastKilledLabel, W/2, H - 78);
-      }
+      drawCenterInfoText();
+      drawVignetteAndFlashes();
 
       ctx.restore();
-      drawHUDText();
     }
 
-    let last = performance.now();
-    function loop(now) {
-      const dt = Math.min(0.033, (now - last) / 1000);
-      last = now;
+    function animate(now){
+      if (!animate.last) animate.last = now;
+      const dt = Math.min(0.033, (now - animate.last) / 1000);
+      animate.last = now;
       update(dt);
       draw();
-      requestAnimationFrame(loop);
+      drawRadar();
+      requestAnimationFrame(animate);
     }
 
-    async function boot() {
-      setCenter("Prepare-se para o raid", "Carregando dados de commits...");
+    // --------------------------
+    // Boot
+    // --------------------------
+    async function boot(){
+      setCenter("Inicializando sistema tático…", "Carregando dados de contribuições e preparando hostis para o raid.", [
+        {k:"Perfil", v:"jaumnp"},
+        {k:"Modo", v:"Commit Raid"},
+        {k:"Visual", v:"v2 HUD"}
+      ]);
+
+      updateBoot(0.08, "<b>[BOOT]</b> inicializando HUD");
+      await new Promise(r => setTimeout(r, 150));
+      updateBoot(0.16, "<b>[BOOT]</b> calibrando retículo");
+      await new Promise(r => setTimeout(r, 120));
+
       const data = await loadCommitRaidData();
       window.__raidData = data;
+
+      updateBoot(0.88, "<b>[BOOT]</b> montando arena procedural");
+      await new Promise(r => setTimeout(r, 160));
       buildQueue(data);
-      requestAnimationFrame(loop);
+
+      updateBoot(1, "<b>[READY]</b> raid online");
+      setTimeout(()=>{
+        ui.bootOverlay.classList.add("hidden");
+        setTimeout(()=> ui.bootOverlay.style.display = "none", 380);
+      }, 220);
+
+      requestAnimationFrame(animate);
     }
 
     boot();
