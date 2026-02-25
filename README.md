@@ -47,11 +47,6 @@
 ## 📊 GitHub Stats
 
 <p align="center">
-  <img height="165" src="https://github-readme-stats.vercel.app/api?username=jaumnp&show_icons=true&theme=tokyonight&hide_border=true&locale=pt-br" />
-  <img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=jaumnp&layout=compact&theme=tokyonight&hide_border=true&locale=pt-br" />
-</p>
-
-<p align="center">
   <img src="https://streak-stats.demolab.com?user=jaumnp&theme=tokyonight&hide_border=true&locale=pt_BR" />
 </p>
 
