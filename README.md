@@ -52,13 +52,15 @@
 
 ---
 
-## 🐍 Joguinho no Perfil (Snake das contribuições)
+## 🎮 Joguinho no para se distrair haha
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/jaumnp/jaumnp/output/snake.svg" alt="Snake animation" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph.svg">
+    <img alt="Pac-Man contribution graph" src="https://raw.githubusercontent.com/jaumnp/jaumnp/output/pacman-contribution-graph.svg">
+  </picture>
 </p>
-
-> ✅ Isso cria uma animação estilo “joguinho” usando seu gráfico de contribuições.
 
 ---
 
