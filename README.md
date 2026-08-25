@@ -33,14 +33,14 @@
 
 ## 📌 Projetos em Destaque
 
-- 🔹 **[Nome do Projeto 1](https://github.com/SEU_USUARIO/projeto-1)**  
-  Descrição curta (ex.: app web com HTML/CSS/JS focado em responsividade e performance).
+- 🔹 **[Fernanda Kober](https://cheffernandakober.onrender.com/)**  
+  Projeto real em desenvolvimento. Vitrine/E-Commerce local para confeitaria.
 
-- 🔹 **[Nome do Projeto 2](https://github.com/SEU_USUARIO/projeto-2)**  
-  Descrição curta (ex.: API com Node.js para autenticação e CRUD).
+- 🔹 **[Academia API](https://github.com/jaumnp/Academia-API)**  
+API estilo Gympass aplicando princípios SOLID, Repository Pattern, Injeção de Dependências, testes unitários e E2E com Vitest e documentação Swagger UI.
 
-- 🔹 **[Nome do Projeto 3](https://github.com/SEU_USUARIO/projeto-3)**  
-  Descrição curta (ex.: estudo em React com componentes reutilizáveis).
+- 🔹 **[Hair Day](https://github.com/jaumnp/HairDay)**  
+Aplicação web para agendamento de barbearias e salões em JavaScript ES6+, Webpack 5 e Day.js, com grade de horários por turnos, bloqueio de horários passados e integração com API REST (JSON-Server).
 
 ---
 
